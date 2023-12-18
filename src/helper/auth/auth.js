@@ -14,11 +14,15 @@ async function registerUser(
     else if (!password) setMessage("Please provide Password");
     else if (password !== confirmPassword) setMessage("Password doesn't match");
     else {
-      const response = await axios.post(`http://localhost:3000/auth/register`, {
-        username,
-        email,
-        password,
-      });
+      const response = await axios.post(
+        // `http://localhost:3000/auth/register`,
+        `https://auth-mjoz.onrender.com/auth/register`,
+        {
+          username,
+          email,
+          password,
+        }
+      );
       if (response.data.success) navigate("/");
       else setMessage(response.data.msg);
     }
@@ -32,10 +36,14 @@ async function getUser(email, password, setMessage, navigate) {
     if (!email) setMessage("Please provide Email address");
     else if (!password) setMessage("Please provide Password");
     else {
-      const response = await axios.post(`http://localhost:3000/auth/login`, {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        // `http://localhost:3000/auth/login`,
+        `https://auth-mjoz.onrender.com/auth/login`,
+        {
+          email,
+          password,
+        }
+      );
       if (response.data.success) navigate("/");
       else setMessage(response.data.msg);
     }
@@ -50,7 +58,8 @@ async function findUser(setUser) {
 
     if (user) {
       const response = await axios.get(
-        `http://localhost:3000/home?user=${user}`
+        // `http://localhost:3000/home?user=${user}`
+        `https://auth-mjoz.onrender.com/home?user=${user}`
       );
       if (response.data.success) {
         if (response.data.user.loggedIn) {
@@ -73,7 +82,8 @@ const resetPass = async (email, setMessage) => {
   try {
     if (email) {
       const response = await axios.post(
-        "http://localhost:3000/auth/resetPassword",
+        // "http://localhost:3000/auth/resetPassword",
+        "https://auth-mjoz.onrender.com/auth/resetPassword",
         { email }
       );
 
@@ -98,7 +108,8 @@ const changePass = async (
   try {
     if (newPassword === confirmNewPassword && newPassword !== "") {
       const response = await axios.post(
-        "http://localhost:3000/auth/changePassword",
+        // "http://localhost:3000/auth/changePassword",
+        "https://auth-mjoz.onrender.com/auth/changePassword",
         {
           email,
           newPassword,
