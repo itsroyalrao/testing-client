@@ -3,8 +3,8 @@ import axios from "axios";
 const isAuthorized = async (navigate) => {
   try {
     const response = await axios.get(
-      // `http://localhost:3000/auth`
-      `https://auth-mjoz.onrender.com/auth`
+      `http://localhost:3000/auth`
+      // `https://auth-mjoz.onrender.com/auth`
     );
     console.log(response);
     if (response.data.success) {
