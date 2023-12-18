@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/home/Home";
 import axios from "axios";
+import Home from "./pages/Home";
 
 function App() {
   axios.defaults.withCredentials = true;
