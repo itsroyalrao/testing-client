@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { setCookies } from "../api/cookies";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [email, setEmail] = useState("");
+
+  const navigate = useNavigate();
 
   return (
     <div className="bg-[#242424] h-[100svh] text-white">
@@ -15,7 +18,7 @@ function Login() {
         />
         <div
           className="bg-blue-600 p-2 rounded-e cursor-pointer"
-          onClick={() => setCookies(email)}
+          onClick={() => setCookies(email, navigate)}
         >
           Login
         </div>
