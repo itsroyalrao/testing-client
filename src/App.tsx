@@ -5,22 +5,25 @@ import { useEffect, useState, useRef } from "react";
 export default function ChatApp() {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(
+    typeof window !== "undefined" ? window.innerHeight : 0
+  );
+
   const chatAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleResize = () => {
       if (window.visualViewport) {
-        const viewportHeight = window.visualViewport.height;
-        const windowHeight = window.innerHeight;
-        const heightDiff = windowHeight - viewportHeight;
+        const vpHeight = window.visualViewport.height;
+        const winHeight = window.innerHeight;
+        const heightDiff = winHeight - vpHeight;
 
-        // Consider keyboard open if the difference is significant
         const keyboardIsOpen = heightDiff > 100;
 
         setIsKeyboardOpen(keyboardIsOpen);
         setKeyboardHeight(keyboardIsOpen ? heightDiff : 0);
+        setViewportHeight(winHeight);
 
-        // Scroll to bottom when keyboard opens
         if (keyboardIsOpen && chatAreaRef.current) {
           setTimeout(() => {
             chatAreaRef.current?.scrollTo({
@@ -29,10 +32,12 @@ export default function ChatApp() {
             });
           }, 100);
         }
+      } else {
+        setViewportHeight(window.innerHeight);
       }
     };
 
-    // Listen for resize events on both window and visualViewport
+    // Add listeners
     window.addEventListener("resize", handleResize);
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", handleResize);
@@ -46,19 +51,27 @@ export default function ChatApp() {
     };
   }, []);
 
+  // Disable background scroll when keyboard is open
+  useEffect(() => {
+    document.body.style.overflow = isKeyboardOpen ? "hidden" : "auto";
+  }, [isKeyboardOpen]);
+
   return (
-    <div className="bg-[#111] text-[#f5f5f5] h-[100svh] overflow-hidden relative">
-      {/* Navbar - fixed height */}
+    <div
+      className="bg-[#111] text-[#f5f5f5] overflow-hidden relative"
+      style={{ height: `${viewportHeight}px` }}
+    >
+      {/* Navbar */}
       <div className="fixed top-0 left-0 w-full h-12 bg-gray-800 z-10 flex items-center justify-center border-b border-gray-700">
         <span className="text-white font-medium">Chat App</span>
       </div>
 
-      {/* Chat area - dynamic height based on keyboard */}
+      {/* Chat area */}
       <div
         ref={chatAreaRef}
         className="absolute top-12 overflow-auto bg-gray-900 space-y-2 p-4"
         style={{
-          bottom: `${24 + keyboardHeight}px`, // Adjust bottom based on input height + keyboard
+          bottom: `${24 + keyboardHeight}px`,
           left: 0,
           right: 0,
         }}
@@ -75,14 +88,13 @@ export default function ChatApp() {
               }`}
             >
               <div className="text-gray-100">
-                {i % 2 === 0 ? "You: " : "Friend: "}
-                This is message #{i + 1}
+                {i % 2 === 0 ? "You: " : "Friend: "}This is message #{i + 1}
               </div>
             </div>
           ))}
       </div>
 
-      {/* Textarea input - fixed at bottom but above keyboard */}
+      {/* Textarea input */}
       <div
         className="fixed left-0 w-full h-24 bg-gray-800 p-4 z-10"
         style={{
