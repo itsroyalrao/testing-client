@@ -1,78 +1,80 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef } from "react";
 
 export default function ChatApp() {
-  const [keyboardHeight, setKeyboardHeight] = useState(0)
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
-  const chatAreaRef = useRef<HTMLDivElement>(null)
-  const lastTouchY = useRef<number | null>(null) // Track the last touch position for direction
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const chatAreaRef = useRef<HTMLDivElement>(null);
+  const lastTouchY = useRef<number | null>(null); // Track the last touch position for direction
 
   useEffect(() => {
     const handleResize = () => {
       if (window.visualViewport) {
-        const viewportHeight = window.visualViewport.height
-        const windowHeight = window.innerHeight
-        const heightDiff = windowHeight - viewportHeight
+        const viewportHeight = window.visualViewport.height;
+        const windowHeight = window.innerHeight;
+        const heightDiff = windowHeight - viewportHeight;
 
-        const keyboardIsOpen = heightDiff > 100
-        setIsKeyboardOpen(keyboardIsOpen)
-        setKeyboardHeight(keyboardIsOpen ? heightDiff : 0)
+        const keyboardIsOpen = heightDiff > 100;
+        setIsKeyboardOpen(keyboardIsOpen);
+        setKeyboardHeight(keyboardIsOpen ? heightDiff : 0);
 
         if (keyboardIsOpen && chatAreaRef.current) {
           setTimeout(() => {
             chatAreaRef.current?.scrollTo({
               top: chatAreaRef.current.scrollHeight,
               behavior: "smooth",
-            })
-          }, 100)
+            });
+          }, 100);
         }
       }
-    }
+    };
 
-    window.addEventListener("resize", handleResize)
+    window.addEventListener("resize", handleResize);
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", handleResize)
+      window.visualViewport.addEventListener("resize", handleResize);
     }
 
     const handleTouchStart = (e: TouchEvent) => {
-      lastTouchY.current = e.touches[0].clientY
-    }
+      lastTouchY.current = e.touches[0].clientY;
+    };
 
     const handleTouchMove = (e: TouchEvent) => {
       if (chatAreaRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } = chatAreaRef.current
-        const isAtTop = scrollTop <= 1 // Small buffer to account for rounding
-        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1
-        const currentTouchY = e.touches[0].clientY
+        const { scrollTop, scrollHeight, clientHeight } = chatAreaRef.current;
+        const isAtTop = scrollTop <= 1; // Small buffer to account for rounding
+        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
+        const currentTouchY = e.touches[0].clientY;
 
         // Determine scroll direction
-        const isScrollingDown = lastTouchY.current !== null && currentTouchY < lastTouchY.current
-        const isScrollingUp = lastTouchY.current !== null && currentTouchY > lastTouchY.current
+        const isScrollingDown =
+          lastTouchY.current !== null && currentTouchY < lastTouchY.current;
+        const isScrollingUp =
+          lastTouchY.current !== null && currentTouchY > lastTouchY.current;
 
-        // Prevent default only if:
-        // - At the top and trying to scroll further up
-        // - At the bottom and trying to scroll further down
+        // Prevent default touch behavior if at the top or bottom
         if ((isAtTop && isScrollingUp) || (isAtBottom && isScrollingDown)) {
-          e.preventDefault()
+          e.preventDefault();
         }
 
-        lastTouchY.current = currentTouchY
+        lastTouchY.current = currentTouchY;
       }
-    }
+    };
 
-    document.addEventListener("touchstart", handleTouchStart, { passive: true })
-    document.addEventListener("touchmove", handleTouchMove, { passive: false })
+    document.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
 
     return () => {
-      window.removeEventListener("resize", handleResize)
+      window.removeEventListener("resize", handleResize);
       if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", handleResize)
+        window.visualViewport.removeEventListener("resize", handleResize);
       }
-      document.removeEventListener("touchstart", handleTouchStart)
-      document.removeEventListener("touchmove", handleTouchMove)
-    }
-  }, [])
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, []);
 
   return (
     <div className="bg-[#111] text-[#f5f5f5] h-[100svh] w-[100vw] overflow-hidden fixed inset-0">
@@ -84,7 +86,7 @@ export default function ChatApp() {
       {/* Chat area */}
       <div
         ref={chatAreaRef}
-        className="absolute top-12 overflow-auto bg-gray-900 space-y-2 p-4"
+        className="absolute top-12 overflow-auto bg-gray-900 space-y-2 p-4 pb-32"
         style={{
           bottom: `${24 + keyboardHeight + 10}px`, // Small buffer to ensure scrollability
           left: 0,
@@ -98,7 +100,9 @@ export default function ChatApp() {
             <div
               key={i}
               className={`p-3 rounded-2xl max-w-[80%] ${
-                i % 2 === 0 ? "bg-blue-600 ml-auto rounded-tr-none" : "bg-gray-700 rounded-tl-none"
+                i % 2 === 0
+                  ? "bg-blue-600 ml-auto rounded-tr-none"
+                  : "bg-gray-700 rounded-tl-none"
               }`}
             >
               <div className="text-gray-100">
@@ -122,5 +126,5 @@ export default function ChatApp() {
         />
       </div>
     </div>
-  )
+  );
 }
