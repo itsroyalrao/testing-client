@@ -1,12 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 function App() {
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
   useEffect(() => {
     const handleResize = () => {
-      // Could use this if needed for logic in future
       if (window.visualViewport) {
-        const isKeyboardLikelyOpen = window.innerHeight - window.visualViewport.height > 100;
-        // Do something if needed
+        const isOpen = window.innerHeight - window.visualViewport.height > 100;
+        setIsKeyboardOpen(isOpen);
+      } else {
+        setIsKeyboardOpen(false);
       }
     };
 
@@ -25,11 +28,13 @@ function App() {
 
   return (
     <div className="bg-[#111] text-[#f5f5f5] h-[100svh] overflow-hidden relative">
+      {/* Navbar */}
       <div className="fixed top-0 left-0 w-full h-12 bg-gray-400 z-10 flex items-center justify-center">
         Navbar
       </div>
 
-      <div className="absolute top-12 bottom-24 left-0 right-0 overflow-auto p-4 space-y-2 bg-gray-700">
+      {/* Chat area */}
+      <div className="absolute top-12 bottom-24 left-0 right-0 overflow-auto bg-gray-700 space-y-2 p-4">
         {Array(100)
           .fill(null)
           .map((_, i) => (
@@ -42,9 +47,13 @@ function App() {
           ))}
       </div>
 
+      {/* Textarea input */}
       <div className="fixed bottom-0 left-0 w-full h-24 bg-gray-200 p-4 z-10">
         <textarea
-          className="bg-[#444] w-full h-full px-4 py-2 rounded-2xl focus:outline-none"
+          className="bg-[#444] w-full h-full px-4 py-2 rounded-2xl focus:outline-none text-white resize-none"
+          placeholder="Type a message..."
+          onFocus={() => setIsKeyboardOpen(true)}
+          onBlur={() => setIsKeyboardOpen(false)}
         />
       </div>
     </div>
