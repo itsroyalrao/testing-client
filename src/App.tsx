@@ -1,15 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 function App() {
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-
   useEffect(() => {
     const handleResize = () => {
       if (window.visualViewport) {
         const isOpen = window.innerHeight - window.visualViewport.height > 100;
-        setIsKeyboardOpen(isOpen);
-      } else {
-        setIsKeyboardOpen(false);
+        console.log('Keyboard open:', isOpen); // use this if you want logging
       }
     };
 
@@ -52,8 +48,6 @@ function App() {
         <textarea
           className="bg-[#444] w-full h-full px-4 py-2 rounded-2xl focus:outline-none text-white resize-none"
           placeholder="Type a message..."
-          onFocus={() => setIsKeyboardOpen(true)}
-          onBlur={() => setIsKeyboardOpen(false)}
         />
       </div>
     </div>
