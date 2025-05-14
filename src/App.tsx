@@ -6,6 +6,7 @@ export default function ChatApp() {
   const [keyboardHeight, setKeyboardHeight] = useState(0)
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
   const chatAreaRef = useRef<HTMLDivElement>(null)
+  const lastTouchY = useRef<number | null>(null) // Track the last touch position for direction
 
   useEffect(() => {
     const handleResize = () => {
@@ -34,22 +35,33 @@ export default function ChatApp() {
       window.visualViewport.addEventListener("resize", handleResize)
     }
 
+    const handleTouchStart = (e: TouchEvent) => {
+      lastTouchY.current = e.touches[0].clientY
+    }
+
     const handleTouchMove = (e: TouchEvent) => {
       if (chatAreaRef.current) {
         const { scrollTop, scrollHeight, clientHeight } = chatAreaRef.current
-        const isAtTop = scrollTop === 0
-        const isAtBottom = scrollTop + clientHeight >= scrollHeight
-        const touchY = e.touches[0].clientY
-        const isScrollingDown = touchY > 0 // Approximate check for downward scroll
+        const isAtTop = scrollTop <= 1 // Small buffer to account for rounding
+        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1
+        const currentTouchY = e.touches[0].clientY
 
-        // Prevent default only if at the top AND scrolling further down
-        // OR at the bottom AND scrolling further up
-        if ((isAtTop && isScrollingDown) || (isAtBottom && !isScrollingDown)) {
+        // Determine scroll direction
+        const isScrollingDown = lastTouchY.current !== null && currentTouchY < lastTouchY.current
+        const isScrollingUp = lastTouchY.current !== null && currentTouchY > lastTouchY.current
+
+        // Prevent default only if:
+        // - At the top and trying to scroll further up
+        // - At the bottom and trying to scroll further down
+        if ((isAtTop && isScrollingUp) || (isAtBottom && isScrollingDown)) {
           e.preventDefault()
         }
+
+        lastTouchY.current = currentTouchY
       }
     }
 
+    document.addEventListener("touchstart", handleTouchStart, { passive: true })
     document.addEventListener("touchmove", handleTouchMove, { passive: false })
 
     return () => {
@@ -57,6 +69,7 @@ export default function ChatApp() {
       if (window.visualViewport) {
         window.visualViewport.removeEventListener("resize", handleResize)
       }
+      document.removeEventListener("touchstart", handleTouchStart)
       document.removeEventListener("touchmove", handleTouchMove)
     }
   }, [])
@@ -73,10 +86,10 @@ export default function ChatApp() {
         ref={chatAreaRef}
         className="absolute top-12 overflow-auto bg-gray-900 space-y-2 p-4"
         style={{
-          bottom: `${24 + keyboardHeight}px`,
+          bottom: `${24 + keyboardHeight + 10}px`, // Small buffer to ensure scrollability
           left: 0,
           right: 0,
-          WebkitOverflowScrolling: "touch", // Keep iOS smooth scrolling
+          WebkitOverflowScrolling: "touch",
         }}
       >
         {Array(20)
