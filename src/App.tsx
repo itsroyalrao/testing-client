@@ -14,13 +14,10 @@ export default function ChatApp() {
         const windowHeight = window.innerHeight
         const heightDiff = windowHeight - viewportHeight
 
-        // Consider keyboard open if the difference is significant
         const keyboardIsOpen = heightDiff > 100
-
         setIsKeyboardOpen(keyboardIsOpen)
         setKeyboardHeight(keyboardIsOpen ? heightDiff : 0)
 
-        // Scroll to bottom when keyboard opens
         if (keyboardIsOpen && chatAreaRef.current) {
           setTimeout(() => {
             chatAreaRef.current?.scrollTo({
@@ -32,20 +29,27 @@ export default function ChatApp() {
       }
     }
 
-    // Listen for resize events on both window and visualViewport
     window.addEventListener("resize", handleResize)
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", handleResize)
     }
 
     const handleTouchMove = (e: TouchEvent) => {
-      // If we're at the top of the chat area and trying to scroll down, prevent default
-      if (chatAreaRef.current && chatAreaRef.current.scrollTop === 0 && e.touches[0].clientY > 0) {
-        e.preventDefault()
+      if (chatAreaRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = chatAreaRef.current
+        const isAtTop = scrollTop === 0
+        const isAtBottom = scrollTop + clientHeight >= scrollHeight
+        const touchY = e.touches[0].clientY
+        const isScrollingDown = touchY > 0 // Approximate check for downward scroll
+
+        // Prevent default only if at the top AND scrolling further down
+        // OR at the bottom AND scrolling further up
+        if ((isAtTop && isScrollingDown) || (isAtBottom && !isScrollingDown)) {
+          e.preventDefault()
+        }
       }
     }
 
-    // Add this after the other event listeners
     document.addEventListener("touchmove", handleTouchMove, { passive: false })
 
     return () => {
@@ -53,28 +57,26 @@ export default function ChatApp() {
       if (window.visualViewport) {
         window.visualViewport.removeEventListener("resize", handleResize)
       }
-      // Remove this in the cleanup function
       document.removeEventListener("touchmove", handleTouchMove)
     }
   }, [])
 
   return (
     <div className="bg-[#111] text-[#f5f5f5] h-[100svh] w-[100vw] overflow-hidden fixed inset-0">
-      {/* Navbar - fixed height */}
+      {/* Navbar */}
       <div className="fixed top-0 left-0 w-full h-12 bg-gray-800 z-10 flex items-center justify-center border-b border-gray-700">
         <span className="text-white font-medium">Chat App</span>
       </div>
 
-      {/* Chat area - dynamic height based on keyboard */}
+      {/* Chat area */}
       <div
         ref={chatAreaRef}
         className="absolute top-12 overflow-auto bg-gray-900 space-y-2 p-4"
         style={{
-          bottom: `${24 + keyboardHeight}px`, // Adjust bottom based on input height + keyboard
+          bottom: `${24 + keyboardHeight}px`,
           left: 0,
           right: 0,
-          overscrollBehavior: "contain", // Prevent scroll chaining
-          WebkitOverflowScrolling: "touch", // Improve scrolling on iOS
+          WebkitOverflowScrolling: "touch", // Keep iOS smooth scrolling
         }}
       >
         {Array(20)
@@ -94,7 +96,7 @@ export default function ChatApp() {
           ))}
       </div>
 
-      {/* Textarea input - fixed at bottom but above keyboard */}
+      {/* Textarea */}
       <div
         className="fixed left-0 w-full h-24 bg-gray-800 p-4 z-10"
         style={{
@@ -109,4 +111,3 @@ export default function ChatApp() {
     </div>
   )
 }
-
